@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Cipher | AI Cryptography Hub</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #070a13;
+            --sidebar-bg: #0f172a;
+            --accent-primary: #38bdf8;
+            --accent-secondary: #818cf8;
+            --text-main: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.05);
+            --transition-smooth: all 0.5s cubic-bezier(0.4, 0, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); overflow: hidden; display: flex; height: 100vh; }
+
+        /* --- LANDING OVERLAY --- */
+        #landing-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, #1e293b 0%, #070a13 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: transform 0.8s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        .hero-title { font-size: clamp(3rem, 10vw, 6rem); font-weight: 900; background: linear-gradient(to right, #fff, var(--accent-primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -2px; text-align: center; }
+        .hero-slogan { color: #94a3b8; font-size: 1.2rem; margin-bottom: 2.5rem; text-align: center; max-width: 600px; line-height: 1.6; }
+        .btn-get-started { padding: 1.2rem 3.5rem; background: transparent; color: white; border: 2px solid var(--accent-primary); border-radius: 50px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-get-started:hover { background: var(--accent-primary); transform: scale(1.05); box-shadow: 0 0 30px rgba(56, 189, 248, 0.4); }
+
+        /* --- SIDEBAR --- */
+        .sidebar { width: 280px; background: var(--sidebar-bg); border-right: 1px solid rgba(255,255,255,0.1); padding: 2rem; display: flex; flex-direction: column; transform: translateX(-100%); transition: var(--transition-smooth); }
+        .app-visible .sidebar { transform: translateX(0); }
+        .logo-small { font-weight: 900; color: var(--accent-primary); margin-bottom: 3rem; font-size: 1.2rem; letter-spacing: 2px; }
+        .nav-link { padding: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 15px; color: #64748b; text-decoration: none; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .nav-link:hover { color: white; background: rgba(255,255,255,0.02); }
+        .nav-link.active { background: var(--glass); color: white; border-left: 4px solid var(--accent-primary); }
+
+        /* --- CONTENT --- */
+        .main-stage { flex: 1; padding: 2.5rem; overflow-y: auto; opacity: 0; transition: 1s; scroll-behavior: smooth; }
+        .app-visible .main-stage { opacity: 1; }
+        .section { display: none; animation: fadeIn 0.4s ease; max-width: 1000px; margin: 0 auto; }
+        .section.active { display: block; }
+
+        .card { background: var(--glass); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+        textarea, .lab-input { width: 100%; background: #020617; color: var(--accent-primary); border: 1px solid #1e293b; border-radius: 10px; padding: 1rem; font-family: 'Courier New', monospace; outline: none; transition: 0.3s; }
+        textarea:focus, .lab-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+
+        .learn-grid { display: grid; grid-template-columns: 220px 1fr; gap: 2rem; }
+        .cipher-menu { display: flex; flex-direction: column; gap: 10px; position: sticky; top: 0; }
+        .cipher-btn { background: #1e293b; border: none; color: #94a3b8; padding: 14px; border-radius: 10px; text-align: left; cursor: pointer; transition: 0.3s; }
+        .cipher-btn:hover { background: #2d3e5a; color: white; }
+        .cipher-btn.active { background: var(--accent-secondary); color: white; font-weight: bold; }
+
+        .theory-pane h2 { font-size: 2rem; color: var(--accent-primary); margin-bottom: 1rem; }
+        .concept-text { color: #cbd5e1; line-height: 1.8; margin-bottom: 1.5rem; font-size: 1.05rem; }
+        
+        .step-box { background: rgba(56, 189, 248, 0.03); border-left: 3px solid var(--accent-primary); padding: 1.2rem; margin: 1rem 0; border-radius: 0 10px 10px 0; color: #e2e8f0; }
+        .math-container { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 20px 0; }
+        .math-block { background: #000; padding: 1.2rem; border-radius: 12px; font-family: monospace; border: 1px solid #1e293b; }
+        .math-block label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 8px; }
+        .math-block code { color: #4ade80; font-size: 1.1rem; }
+
+        /* --- CRYPTO LAB --- */
+        .crypto-lab { margin-top: 3rem; border-top: 1px solid #334155; padding-top: 2.5rem; }
+        .lab-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .lab-result { background: rgba(74, 222, 128, 0.1); border: 1px solid #4ade80; padding: 1.5rem; border-radius: 12px; color: #4ade80; font-weight: 800; font-family: 'Courier New', monospace; font-size: 1.3rem; min-height: 70px; display: flex; align-items: center; letter-spacing: 2px; }
+
+        /* --- NEW STYLES FOR MODEL SELECTOR --- */
+        .model-selector-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0 5px;
+        }
+        .model-selector-container label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #94a3b8;
+            letter-spacing: 1px;
+        }
+        .model-dropdown {
+            background: #0f172a;
+            color: var(--accent-primary);
+            border: 1px solid #334155;
+            padding: 8px 15px;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .model-dropdown:hover {
+            border-color: var(--accent-primary);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="landing-overlay">
+        <h1 class="hero-title">Neural Cipher</h1>
+        <p class="hero-slogan">Unmasking classical cryptography through the lens of machine learning. Learn, encrypt, and analyze patterns in one interface.</p>
+        <button class="btn-get-started" onclick="enterApp()">Get Started</button>
+    </div>
+
+    <nav class="sidebar">
+        <div class="logo-small"><i class="fas fa-network-wired"></i> NEURAL CIPHER</div>
+        <div class="nav-links">
+            <div class="nav-link active" onclick="switchSection('detector', this)"><i class="fas fa-microchip"></i> Detector Dashboard</div>
+            <div class="nav-link" onclick="switchSection('learn', this)"><i class="fas fa-graduation-cap"></i> Educational Hub</div>
+        </div>
+    </nav>
+
+    <main class="main-stage">
+        <section id="detector" class="section active">
+            <h1>AI Cipher Analysis</h1>
+            <p style="color: #64748b; margin-bottom: 2rem;">Paste encrypted text here. The Neural Network analyzes character frequency and entropy to predict the cipher type.</p>
+            <div class="card">
+                <div class="model-selector-container">
+                    <label><i class="fas fa-project-diagram"></i> SELECT NEURAL MODEL</label>
+                    <select class="model-dropdown">
+                        <option value="xgboost">XGBoost (Entropy-Optimized)</option>
+                        
+                        <option value="random_forest">Random Forest Pipeline</option>
+                        
+                    </select>
+                </div>
+                
+                <textarea id="ai-input" rows="8" placeholder="Enter mystery ciphertext here... (Example: Wklv lv d whvw)"></textarea>
+                <button onclick="runAI()" style="width:100%; padding:1.2rem; margin-top:1.5rem; border-radius:12px; border:none; background:linear-gradient(to right, var(--accent-primary), var(--accent-secondary)); color:white; font-weight:900; cursor:pointer; letter-spacing:1px;">IDENTIFY PATTERN</button>
+            </div>
+            <div id="ai-result" class="card" style="display:none; border-color:#4ade80; border-left: 8px solid #4ade80;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><small style="color:#64748b">PRIMARY MATCH</small><h2 id="ai-name" style="color:#4ade80; font-size:2.2rem;">CAESAR</h2></div>
+                    <div style="text-align:right"><small style="color:#64748b">CONFIDENCE</small><h2 id="ai-conf" style="font-size:2rem;">98.2%</h2></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="learn" class="section">
+            <div class="learn-grid">
+                <aside class="cipher-menu">
+                    <button class="cipher-btn active" onclick="loadTheory('caesar', this)">Caesar Cipher</button>
+                    <button class="cipher-btn" onclick="loadTheory('vigenere', this)">Vigenère</button>
+                    <button class="cipher-btn" onclick="loadTheory('sub', this)">Substitution</button>
+                    <button class="cipher-btn" onclick="loadTheory('trans', this)">Transposition</button>
+                    <button class="cipher-btn" onclick="loadTheory('playfair', this)">Playfair</button>
+                </aside>
+
+                <div class="theory-pane card">
+                    <div id="theory-content"></div>
+
+                    <div class="crypto-lab">
+                        <h3 style="color:var(--accent-primary); margin-bottom:20px; font-size:1.4rem;"><i class="fas fa-vial"></i> Live Encryption Lab</h3>
+                        <div class="lab-controls">
+                            <div>
+                                <label style="font-size:0.8rem; color:#94a3b8; font-weight:bold; letter-spacing:1px;">PLAINTEXT INPUT</label>
+                                <input type="text" id="lab-input" class="lab-input" placeholder="Type message..." oninput="processCrypto()">
+                            </div>
+                            <div>
+                                <label style="font-size:0.8rem; color:#94a3b8; font-weight:bold; letter-spacing:1px;" id="key-label">SHIFT KEY</label>
+                                <input type="text" id="lab-key" class="lab-input" oninput="processCrypto()">
+                            </div>
+                        </div>
+                        <label style="font-size:0.8rem; color:#94a3b8; font-weight:bold; letter-spacing:1px;">ENCRYPTED OUTPUT</label>
+                        <div class="lab-result" id="lab-output">...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let activeCipher = 'caesar';
+
+        const theories = {
+            caesar: { 
+                title: "Caesar Cipher", 
+                concept: "The Caesar Cipher is the most basic encryption method. It works by shifting every letter in your message by a fixed number of places. Think of the alphabet on a wheel; if your shift is 3, 'A' moves 3 spots to 'D'.", 
+                eMath: "E(x) = (x + k) mod 26", 
+                dMath: "D(x) = (x - k) mod 26",
+                steps: [
+                    "1. Assign a number to every letter (A=0, B=1, ..., Z=25).",
+                    "2. Add your Shift Key to the letter's index.",
+                    "3. If the result is greater than 25, wrap back to the start (Modulo 26).",
+                    "Example: Shift 3: CAT → (2+3), (0+3), (19+3) → FDW."
+                ], 
+                keyLabel: "Shift (Number 0-25)", 
+                defKey: "3" 
+            },
+            vigenere: { 
+                title: "Vigenère Cipher", 
+                concept: "This is a polyalphabetic cipher. Instead of one shift for the whole message, it uses a Keyword where every letter of the keyword represents a different Caesar shift. This makes it much harder to break than Caesar.", 
+                eMath: "Ci = (Pi + Ki) mod 26", 
+                dMath: "Pi = (Ci - Ki + 26) mod 26",
+                steps: [
+                    "1. Pick a keyword (e.g., 'KEY').",
+                    "2. Align the keyword over your text: C A T / K E Y.",
+                    "3. Add the letter value of 'C' to 'K', 'A' to 'E', and so on.",
+                    "Result: The same letter in your text might turn into different letters elsewhere!"
+                ], 
+                keyLabel: "Keyword (Letters)", 
+                defKey: "SECRET" 
+            },
+            sub: { 
+                title: "Substitution Cipher", 
+                concept: "In this cipher, the entire alphabet is shuffled. Every 'A' is replaced by a specific letter, every 'B' by another, and so on. There are billions of possible alphabets, but it is vulnerable to 'Frequency Analysis' (seeing which letters appear most often).", 
+                eMath: "Map: Alphabet → Shuffled", 
+                dMath: "Map: Shuffled → Alphabet",
+                steps: [
+                    "1. Create a 26-letter 'Key Alphabet'.",
+                    "2. For every letter in your message, find its counterpart in the Key Alphabet.",
+                    "Example: If Key is QWERTY..., 'A' becomes 'Q', 'B' becomes 'W'."
+                ], 
+                keyLabel: "Shuffled Alphabet (26 chars)", 
+                defKey: "QWERTYUIOPASDFGHJKLZXCVBNM" 
+            },
+            trans: { 
+                title: "Columnar Transposition", 
+                concept: "This cipher doesn't change the letters; it scrambles their order. You write your message into a grid and read it back column-by-column according to a secret numeric key.", 
+                eMath: "Grid Rows → Keyed Columns", 
+                dMath: "Keyed Columns → Grid Rows",
+                steps: [
+                    "1. Write message in a row-based grid (e.g., 3 columns wide).",
+                    "2. Read the characters vertically in a specific column order.",
+                    "Example: 'HELLO' in 2 columns: Row1: HE, Row2: LL, Row3: O. Read Col1 then Col2: HLOEL."
+                ], 
+                keyLabel: "Order (e.g. 213)", 
+                defKey: "21" 
+            },
+            playfair: { 
+                title: "Playfair Cipher", 
+                concept: "A giant leap in complexity. It encrypts letters in PAIRS (Digraphs) using a 5x5 grid. Because it encrypts pairs, it hides the individual letter frequencies of the language.", 
+                eMath: "5x5 Matrix Rule-set", 
+                dMath: "5x5 Matrix Inverse Rules",
+                steps: [
+                    "1. Create a 5x5 grid using a keyword (combine I and J).",
+                    "2. Split text into pairs: 'HE', 'LL', 'OW'. (Add 'X' if a pair is identical like 'LL').",
+                    "3. If letters are in same row: Shift Right. Same column: Shift Down. Different: Form a Rectangle and swap corners."
+                ], 
+                keyLabel: "Grid Keyword", 
+                defKey: "MONARCHY" 
+            }
+        };
+
+        function enterApp() {
+            document.getElementById('landing-overlay').style.transform = 'translateY(-100%)';
+            document.body.classList.add('app-visible');
+            loadTheory('caesar');
+        }
+
+        function switchSection(id, el) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function loadTheory(key, btn) {
+            activeCipher = key;
+            if(btn) {
+                document.querySelectorAll('.cipher-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            const data = theories[key];
+            document.getElementById('theory-content').innerHTML = `
+                <h2>${data.title}</h2>
+                <p class="concept-text">${data.concept}</p>
+                <div class="math-container">
+                    <div class="math-block"><label>Encryption Formula</label><code>${data.eMath}</code></div>
+                    <div class="math-block"><label>Decryption Formula</label><code>${data.dMath}</code></div>
+                </div>
+                <h4 style="margin-bottom:10px;">How to process it:</h4>
+                ${data.steps.map(s => `<div class="step-box">${s}</div>`).join('')}
+            `;
+            document.getElementById('key-label').innerText = data.keyLabel;
+            document.getElementById('lab-key').value = data.defKey;
+            processCrypto();
+        }
+
+        function processCrypto() {
+            const input = document.getElementById('lab-input').value.toUpperCase().replace(/[^A-Z]/g, "");
+            const keyRaw = document.getElementById('lab-key').value.toUpperCase();
+            let out = "";
+
+            if(activeCipher === 'caesar') {
+                let shift = parseInt(keyRaw) || 0;
+                for (let i = 0; i < input.length; i++) {
+                    let c = input.charCodeAt(i);
+                    let shifted = ((c - 65 + shift) % 26);
+                    if (shifted < 0) shifted += 26; 
+                    out += String.fromCharCode(shifted + 65);
+                }
+            } 
+            else if(activeCipher === 'vigenere') {
+                let key = keyRaw.replace(/[^A-Z]/g, "");
+                if(!key) return;
+                for(let i=0, j=0; i<input.length; i++) {
+                    out += String.fromCharCode(((input.charCodeAt(i)-65 + (key.charCodeAt(j%key.length)-65))%26)+65);
+                    j++;
+                }
+            }
+            else if(activeCipher === 'sub') {
+                const map = keyRaw.padEnd(26, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+                out = input.replace(/[A-Z]/g, c => map[c.charCodeAt(0)-65] || c);
+            }
+            else if(activeCipher === 'trans') {
+                let chunk = parseInt(keyRaw) || 2;
+                for(let i=0; i<input.length; i+=chunk) {
+                    out += input.slice(i, i+chunk).split('').reverse().join('');
+                }
+            }
+            else if(activeCipher === 'playfair') {
+                let key = keyRaw.replace(/[^A-Z]/g, "").replace(/J/g, "I");
+                if(!key) return;
+                let matrix = [...new Set((key + "ABCDEFGHIKLMNOPQRSTUVWXYZ").split(""))].join("").slice(0, 25);
+                let text = input.replace(/J/g, "I");
+                let pairs = [];
+                for(let i=0; i<text.length; i += 2) {
+                    let a = text[i], b = text[i+1] || 'X';
+                    if(a === b) { b = 'X'; i--; } 
+                    pairs.push([a, b]);
+                }
+                pairs.forEach(p => {
+                    let a=matrix.indexOf(p[0]), b=matrix.indexOf(p[1]);
+                    let r1=Math.floor(a/5), c1=a%5, r2=Math.floor(b/5), c2=b%5;
+                    if(r1===r2) out += matrix[r1*5+(c1+1)%5] + matrix[r2*5+(c2+1)%5];
+                    else if(c1===c2) out += matrix[((r1+1)%5)*5+c1] + matrix[((r2+1)%5)*5+c2];
+                    else out += matrix[r1*5+c2] + matrix[r2*5+c1];
+                });
+            }
+
+            document.getElementById('lab-output').innerText = out || "Awaiting valid input...";
+        }
+
+        // --- UPDATED AI API CONNECTION ---
+        async function runAI() {
+            const textInput = document.getElementById('ai-input').value;
+            const modelSelect = document.querySelector('.model-dropdown').value;
+            const outputCard = document.getElementById('ai-result');
+            const nameEl = document.getElementById('ai-name');
+            const confEl = document.getElementById('ai-conf');
+
+            if (!textInput || textInput.length < 20) {
+                alert("Please enter at least 20 characters of ciphertext for accurate AI analysis.");
+                return;
+            }
+
+            try {
+                // Call the Flask API
+                const response = await fetch('http://127.0.0.1:5000/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textInput, model: modelSelect })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert("AI Error: " + (data.error || "Could not analyze text."));
+                    return;
+                }
+
+                // Inject the actual AI predictions into your HTML
+                nameEl.innerText = data.cipher;
+                confEl.innerText = data.confidence;
+
+                // Reveal the result card with your existing animation
+                outputCard.style.display = 'block';
+                outputCard.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                alert("Connection failed. Please ensure your Python Flask server (app.py) is running in the terminal.");
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
